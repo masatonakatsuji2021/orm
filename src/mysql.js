@@ -2,6 +2,8 @@ const mysql = require("mysql");
 
 const OrmMysql = function(option){
 
+    this.type = "mysql";
+
     if(!option.host){
         option.host = "localhost";
     }
@@ -30,7 +32,11 @@ const OrmMysql = function(option){
     };
 
     if(option.database){
-        dbSet.database = option.database;
+        this.dbName = option.database;
+    }
+
+    if(option.table){
+        this.tableName = option.table;
     }
 
     const connection = mysql.createConnection(dbSet);
@@ -69,6 +75,7 @@ const OrmMysql = function(option){
             if(err){
                 callback({
                     result: false,
+                    sql: sql,
                     error: err,
                 });
                 return;
@@ -76,10 +83,10 @@ const OrmMysql = function(option){
   
             callback({
                 result :true,
+                sql: sql,
                 res: res,
             });
         });
     };
 };
-
 module.exports = OrmMysql;
