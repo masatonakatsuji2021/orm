@@ -1,4 +1,4 @@
-const OrmSelect = function(context){
+const OrmSelect = function(context, option){
 
     var wheres = [];
     var fields = [];

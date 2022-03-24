@@ -4,7 +4,7 @@ const pgsql = require("./pgsql.js");
 const sqlite3 = require("./sqlite3.js");
 const oracle = require("./oracle.js");
 const select = require("./select.js");
-const { isContext } = require("vm");
+const createTable = require("./createTable.js");
 
 module.exports = function(option){
 
@@ -146,9 +146,23 @@ module.exports = function(option){
      * select
      * @returns 
      */
-    this.select = function(){
-        return new select(this);
+
+    /**
+     * select
+     * @param {*} option 
+     * @returns 
+     */
+    this.select = function(option){
+        return new select(this, option);
     };
 
+    /**
+     * createTable
+     * @param {*} option 
+     * @returns 
+     */
+    this.createTable = function(option){
+        return new createTable(this, option);
+    };
 
 };
