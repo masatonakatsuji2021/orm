@@ -2,8 +2,14 @@ const sqlite3 = require("sqlite3");
 
 const OrmSqlite3 = function(option){
 
+    this.type = "sqlite3";
+    
     if(!option.path){
         option.path = "sqlite.sqlite";
+    }
+
+    if(option.table){
+        this.tableName = option.table;
     }
 
     const db = new sqlite3.Database(option.path);

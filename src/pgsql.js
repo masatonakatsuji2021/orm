@@ -1,6 +1,8 @@
-const pgsql = require("pgsql");
+const pg = require("pg");
 
 const OrmPgsql = function(option){
+
+    this.type = "pgsql";
 
     if(!option.host){
         option.host = "localhost";
@@ -29,7 +31,7 @@ const OrmPgsql = function(option){
         dbSet.database = option.database;
     }
 
-    var client = new pgsql.Client(dbSet);
+    var client = new pg.Client(dbSet);
 
     client.connect()
     
