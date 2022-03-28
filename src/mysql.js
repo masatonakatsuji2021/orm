@@ -3,6 +3,7 @@ const mysql = require("mysql");
 const OrmMysql = function(option){
 
     this.type = "mysql";
+    this.sallogateKey = null;
 
     if(!option.host){
         option.host = "localhost";
@@ -37,6 +38,36 @@ const OrmMysql = function(option){
 
     if(option.table){
         this.tableName = option.table;
+    }
+
+    // Surrogate Key
+    if(option.surrogateKey){
+        this.surrogateKey = option.surrogateKey;
+    }
+
+    // Insert On Get Data
+    if(option.insertOnGetData){
+        this.insertOnGetData = option.insertOnGetData;
+    }
+
+    // Update On Get Data
+    if(option.updateOnGetData){
+        this.updateOnGetData = option.updateOnGetData;
+    }
+
+    // Create Time Stamp
+    if(option.createTimeStamp){
+        this.createTimeStamp = option.createTimeStamp;
+    }
+
+    // Update Time Stamp
+    if(option.UpdateTimeStamp){
+        this.UpdateTimeStamp = option.UpdateTimeStamp;
+    }
+
+    // logical Delete Key
+    if(option.logicalDeleteKey){
+        this.logicalDeleteKey = option.logicalDeleteKey;
     }
 
     const connection = mysql.createConnection(dbSet);

@@ -14,68 +14,62 @@ const OrmCreateTable = function(context, option){
         return this;
     };
 
-    this.addColumn = function( opt){
+    this.addColumn = function(opt){
         colums.push(opt);
         return this;
     };
 
+    /**
+     * getSql
+     * @returns 
+     */
     this.getSql = function(){
 
-        var createTableSql = "CREATE TABLE";
+        var createTable;
 
-        if(tableOption){
-            if(tableOption.ifNotExists){
-                createTableSql += " IF NOT EXISTS";
-            }
+        if(context.getType() == "mysql"){
+            createTable = require("./createTableMysql.js");
+        }
+        else if(context.getType() == "pgsql"){
+            createTable = require("./createTablePgsql.js");
+        }
+        else if(context.getType() == "sqlite3"){
+            createTable = require("./createTableSqlite3.js");
+        }
+        else if(context.getType() == "oracle"){
+            createTable = require("./createTableOracle.js");
         }
 
-        createTableSql += " " + context.getDatabase() + "." + tableName + " ";
+        var sql = createTable(context, tableName, tableOption, colums);
 
-        if(colums.length){
-            var columsList = "(\n";
-            for(var n = 0 ; n < colums.length ; n++){
-                if(n > 0){
-                    columsList += ", \n";
-                }
-                var c_ = colums[n];
-
-                columsList += c_.name + " " + c_.type;
-
-                if(c_.length){
-                    columsList += "(" + c_.length + ")";
-                }
-            
-            }
-
-            columsList += "\n)";
-
-            createTableSql += columsList;
-        }
-
-        if(tableOption){
-            if(tableOption.character){
-                createTableSql += " CHARACTER SET " + tableOption.character;
-            }
-
-            if(tableOption.collate){
-                createTableSql += " COLLATE " + tableOption.collate;
-            }
-        }
-
-        return createTableSql;
+        return sql;
     };
 
+    /**
+     * run
+     * @param {*} callback 
+     * @returns 
+     */
     this.run = function(callback){
-
         var sql = this.getSql();
-
-        console.log(sql);
+        return context.query(sql, callback);
     };
 
     if(option){
+        if(option.table){
 
+            var _opt = null;
+            if(option.option){
+                _opt = option.option;
+            }
+    
+            this.table(option.table, _opt);
+        }
+
+        if(option.colums){
+            colums = option.colums;
+        }
     }
-
 
 };
 module.exports = OrmCreateTable;
