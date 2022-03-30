@@ -27,16 +27,6 @@ const OrmUpdate = function(context, option){
     };
 
     /**
-     * updateTimeStamp
-     * @param {*} status 
-     * @returns 
-     */
-     this.updateTimeStamp = function(status){
-        context.setUpdateTimeStamp(status);
-        return this;
-    };
-
-    /**
      * _wheres
      * @param {*} where_ 
      * @returns 
@@ -78,6 +68,26 @@ const OrmUpdate = function(context, option){
         }
         
         return this.where(context.getSurrogateKey(), operand, surrogateId);
+    };
+
+    /**
+     * updateTimeStamp
+     * @param {*} status 
+     * @returns 
+     */
+     this.updateTimeStamp = function(status){
+        context.setUpdateTimeStamp(status);
+        return this;
+    };
+
+    /**
+     * callback
+     * @param {*} callback 
+     * @returns 
+     */
+     this.callback = function(callback){
+        context.updateCallback(callback);
+        return this;
     };
 
     /**
@@ -163,7 +173,17 @@ const OrmUpdate = function(context, option){
      * @returns 
      */
     this.run = function(callback){
+
+        var updateCallback = context.updateCallback();
+        if(updateCallback){
+            var buff = updateCallback(data);
+            if(buff){
+                data = buff;
+            }
+        }
+
         var sqls = this.getSqls();
+
         context.bind(sqls.sql, sqls.bind, function(res){
 
             if(!res.result){

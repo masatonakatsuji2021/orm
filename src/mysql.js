@@ -36,6 +36,7 @@ const OrmMysql = function(option){
         this.dbName = option.database;
     }
 
+    // table name
     if(option.table){
         this.tableName = option.table;
     }
@@ -61,13 +62,28 @@ const OrmMysql = function(option){
     }
 
     // Update Time Stamp
-    if(option.UpdateTimeStamp){
-        this.UpdateTimeStamp = option.UpdateTimeStamp;
+    if(option.updateTimeStamp){
+        this.updateTimeStamp = option.updateTimeStamp;
     }
 
     // logical Delete Key
     if(option.logicalDeleteKey){
         this.logicalDeleteKey = option.logicalDeleteKey;
+    }
+
+    // select callback
+    if(option.selectCallback){
+        this.selectCallback = option.selectCallback;
+    }
+
+    // insert callback
+    if(option.insertCallback){
+        this.insertCallback = option.insertCallback;
+    }
+
+    // update callback
+    if(option.updateCallback){
+        this.updateCallback = option.updateCallback;
     }
 
     const connection = mysql.createConnection(dbSet);

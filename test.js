@@ -1,6 +1,6 @@
 const Orm = require("./src");
 
-var mysql = new Orm({
+var mysql1 = new Orm({
     type: "mysql",
     host: "localhost",
     port: 3306,
@@ -8,11 +8,194 @@ var mysql = new Orm({
     password: "",
     database: "test20220318",
     table: "test1",
+
     surrogateKey: "id",
-    // datetime:"updated_at",
+    updateTimeStamp: "updated_at",
     logicalDeleteKey: "deleted",
+
+    selectCallback: function(res){
+        res.memo = "OK!!";
+        return res;
+    },
+    insertCallback: function(res){
+
+        res.firstName += "....OK";
+        return res;
+    },
+    updateCallback: function(res){
+        console.log("update callback");
+        res.firstName += "append...";
+        return res;
+    },
 });
 
+var mysql2 = new Orm({
+    type: "mysql",
+    host: "localhost",
+    port: 3306,
+    user: "root",
+    password: "",
+    database: "test20220318",
+    table: "test1",
+
+    surrogateKey: "id",
+    updateTimeStamp: "updated_at",
+    logicalDeleteKey: "deleted",
+
+    selectCallback: function(res){
+        res.memo = "OK!!";
+        return res;
+    },
+    insertCallback: function(res){
+
+        res.firstName += "....OK";
+        return res;
+    },
+    updateCallback: function(res){
+        console.log("update callback");
+        res.firstName += "append...";
+        return res;
+
+    },
+});
+
+mysql1.then(function(resolve){
+
+    mysql1.begin(resolve);
+
+}).then(function(resolve){
+
+    mysql2.begin(resolve);
+
+}).then(function(resolve){
+    
+    mysql1.insert()
+        .data({
+            firstName: "テスト1",
+            lastName: "三郎001",
+            age: 101,
+        })
+        .run(function(res){
+            console.log(res);
+            resolve();
+        });
+
+}).then(function(resolve){
+
+    mysql2.insert()
+        .data({
+            firstName: "テスト2",
+            lastName: "三郎002",
+            age: 102,
+        })
+        .run(function(res){
+            console.log(res);
+            resolve();
+        });
+        
+}).then(function(resolve){
+    
+    mysql2.commit(resolve);
+
+}).then(function(resolve){
+    
+    mysql1.commit(resolve);
+
+}).start();
+
+/*
+mysql.then(function(resolve){
+
+    console.log("transaction begin");
+
+    mysql.transaction().begin(function(res){
+        console.log(res);
+        resolve();
+    });
+
+}).then(function(resolve){
+
+    console.log("update Start");
+
+    mysql.update()
+        .where("id", "=", 14)
+        .data({
+            firstName: "更新名....",
+        })
+        .run(function(res){
+            console.log(res);
+            resolve();
+        });
+
+}).then(function(resolve){
+
+    console.log("Insert1 Start");
+
+    mysql.insert()
+        .data({
+            firstName: "テスト",
+            lastName: "三郎",
+            age: 102,
+        })
+        .run(function(res){
+            console.log(res);
+            resolve();
+        });
+
+}).then(function(resolve){
+
+    console.log("Insert2 Start");
+        
+    mysql.insert()
+    .data({
+        firstName: "テスト",
+        lastName: "史郎",
+        age: 102,
+    })
+    .run(function(res){
+        console.log(res);
+        resolve();
+    });
+
+}).then(function(resolve){
+
+    console.log("transaction rollback");
+
+    mysql.transaction().rollback(function(res){
+        console.log(res);
+        resolve();
+    });
+
+}).start();
+*/
+
+/*
+mysql.select({
+    field: [
+        "id",
+        "firstName",
+    ],
+    where:[
+        ["id", ">", 3],
+        ["id", "<", 5],
+    ],
+    getCount: function(res){
+        console.log(res);
+    },
+    get: function(res){
+
+        console.log(res);
+
+    },
+});
+*/
+/*
+    .callback(function(res){
+        res.status = "OKDAYO";
+        return res;
+    })
+*/
+/*
 var sql = mysql
     .delete()
 //    .logicalDeleteKey("delete_flg")
@@ -20,7 +203,7 @@ var sql = mysql
     .getSqls();
 
 console.log(sql);
-
+*/
 /*
 mysql
     .insert()

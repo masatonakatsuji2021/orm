@@ -1,4 +1,4 @@
-const OrmQuery = function(sql, connection, callback){
+const OrmQuery = function(sql, connection, callback, beforeCallback){
 
     var thenCallback;
     var successCallback;
@@ -24,6 +24,13 @@ const OrmQuery = function(sql, connection, callback){
     };
 
     connection.query(sql, function(res){
+
+        if(beforeCallback){
+            var buff = beforeCallback(res);
+            if(buff){
+                res = buff;
+            }
+        }
 
         if(res.res){
             if(successCallback){

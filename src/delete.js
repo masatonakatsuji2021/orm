@@ -4,6 +4,7 @@ const update = require("./update.js");
 const OrmDelete = function(context, option){
 
     var wheres = [];
+    var physicalDelete;
 
     /**
      * _wheres
@@ -60,6 +61,86 @@ const OrmDelete = function(context, option){
     };
 
     /**
+     * physicalDelete
+     * @param {*} status 
+     * @returns 
+     */
+    this.physicalDelete = function(status){
+        physicalDelete = status;
+        return this;
+    };
+
+    /**
+     * logicalDeleteSql
+     * @returns 
+     */
+    const logicalDeleteSql = function(){
+
+        var update_ = new update(context);
+        var sqls = update_
+            ._wheres(wheres)
+            .data({
+                [context.getLogicalDeleteKey()]: 1,
+            })
+            .getSqls();
+
+        return sqls;
+    };
+
+    /**
+     * physicalDeleteSql
+     * @returns 
+     */
+    const physicalDeleteSql = function(){
+
+        var sql = "DELETE FROM";
+
+        const setbinds = new setBind();
+
+        if(context.getType() == "sqlite3"){
+            sql += " " + context.getTable();
+        }
+        else{
+            sql += " " + context.getDatabase() + "." + context.getTable();
+        }
+
+        if(wheres.length){
+            sql += " WHERE";
+            for(var n = 0 ; n < wheres.length ; n++){
+                var w_ = wheres[n];
+
+                if(n > 0){
+                    sql += " " + w_.joinOperand;
+                }
+
+                if(w_.value == null){
+                    if(w_.operand == "="){
+                        w_.operand = "IS";
+                    }
+                    else if(w_.operand == "!="){
+                        w_.operand = "IS NOT";
+                    }
+                }
+
+                if(w_.operand == "IN"){
+                    sql += " " + w_.field + " " + w_.operand + " (" + setbinds.set(w_.value) + ")";
+                }
+                else{
+                    sql += " " + w_.field + " " + w_.operand + " " + setbinds.set(w_.value);
+                }
+            }
+        }
+
+        sql += ";"
+
+        return {
+            sql: sql,
+            bind: setbinds.getBind(),
+        };
+    };
+
+
+    /**
      * getSqls
      * @returns 
      */
@@ -67,62 +148,18 @@ const OrmDelete = function(context, option){
 
         if(context.getLogicalDeleteKey()){
 
-            var update_ = new update(context);
-            var sqls = update_
-                ._wheres(wheres)
-                .data({
-                    [context.getLogicalDeleteKey()]: 1,
-                })
-                .getSqls();
-
-            return sqls;
-        }
-        else{
-
-            var sql = "DELETE FROM";
-
-            const setbinds = new setBind();
-    
-            if(context.getType() == "sqlite3"){
-                sql += " " + context.getTable();
+            if(this.physicalDelete()){
+                // Get Physical Delete Sql
+                return physicalDeleteSql();
             }
             else{
-                sql += " " + context.getDatabase() + "." + context.getTable();
+                // Get Logical Delete Sql
+                return logicalDeleteSql();
             }
-    
-            if(wheres.length){
-                sql += " WHERE";
-                for(var n = 0 ; n < wheres.length ; n++){
-                    var w_ = wheres[n];
-    
-                    if(n > 0){
-                        sql += " " + w_.joinOperand;
-                    }
-    
-                    if(w_.value == null){
-                        if(w_.operand == "="){
-                            w_.operand = "IS";
-                        }
-                        else if(w_.operand == "!="){
-                            w_.operand = "IS NOT";
-                        }
-                    }
-    
-                    if(w_.operand == "IN"){
-                        sql += " " + w_.field + " " + w_.operand + " (" + setbinds.set(w_.value) + ")";
-                    }
-                    else{
-                        sql += " " + w_.field + " " + w_.operand + " " + setbinds.set(w_.value);
-                    }
-                }
-            }
-    
-            sql += ";"
-
-            return {
-                sql: sql,
-                bind: setbinds.getBind(),
-            };
+        }
+        else{
+            // Get Physical Delete Sql
+            return physicalDeleteSql();
         }
 
      }

@@ -11,38 +11,56 @@ const createDatabase = require("./createDatabase.js");
 const createTable = require("./createTable.js");
 const dropTable = require("./dropTable.js");
 const alterTable = require("./alterTable.js");
+const transaction = require("./transaction.js");
+const sync = require("./sync.js");
 
-module.exports = function(option){
+/**
+ * ORM
+ * 
+ * OR-Mapping Class
+ * @param {ConnectionSetting} connectionSetting SQL Connection Settings
+ * 
+ * @example  <caption>case MySQL:</caption>
+ * new Orm({
+ *      type: "mysql",
+ *      host: "localhost",
+ *      port: 3306,
+ *      user: "root"
+ *      password: "****",
+ *      database: "database01",
+ * })
+ * 
+ * @example <caption>Case PostgreSQL:</caption>
+ * new Orm({
+ *      type: "pgsql",
+ *      host: "localhost",
+ *      port: 5432,
+ *      user: "postgres"
+ *      password: "****",
+ *      database: "database01",
+ * })
+ * 
+ * @example <caption>case SQLite3:</caption>
+ * new Orm({
+ *      type: "sqlite3",
+ *      path: "sqlite_server.sqlite",
+ * })
+ * 
+ * @returns {ORM} ORM Object Class
+ */
+const Orm = function(connectionSetting){
 
     var connection;
 
-    /*
-    if(!option.type){
-        option.type = "mysql";
-    }
-    */
-
-    if(!option){
-        option = {};
-    }
-
-    if(option.type == "mysql"){
-        connection = new mysql(option);
-    }
-    else if(option.type == "pgsql"){
-        connection = new pgsql(option);
-    }
-    else if(option.type == "sqlite3"){
-        connection = new sqlite3(option);
-    }
-    else if(option.type == "oracle"){
-        connection = new oracle(option);
+    if(!connectionSetting){
+        connectionSetting = {};
     }
 
     /**
      * setting
-     * @param {*} newConnection 
-     * @returns 
+     * Execute SQL connection settings.
+     * @param {*} newConnection SQL Connection Settings
+     * @returns {ORM} ORM Object Class
      */
     this.setting = function(newConnection){
 
@@ -61,10 +79,14 @@ module.exports = function(option){
         return this;
     };
 
+    // Initial load
+    this.setting(connectionSetting);
+
     /**
      * connection
-     * @param {*} callback 
-     * @returns 
+     * Manually start the database connection.
+     * @param {function} callback Callback function after database connection is completed
+     * @returns {ORM} ORM Object Class
      */
     this.connection = function(callback){
         connection.connection(callback);
@@ -73,17 +95,30 @@ module.exports = function(option){
 
     /**
      * query
-     * @param {*} sql 
-     * @param {*} callback 
-     * @returns 
+     * 
+     * Manually execute any SQL request.
+     * After requesting SQL, execute the callback function.
+     * @param {string} sql SQL Code 
+     * @param {function} callback Callback function after SQL request completion.
+     * @param {function} beforeCallback 
+     * @returns {OrmQuery} ORM Query Object Class
      */
-    this.query = function(sql, callback){
-        return new OrmQuery(sql, connection, callback);
+    this.query = function(sql, callback, beforeCallback){
+        return new OrmQuery(sql, connection, callback, beforeCallback);
     };
 
     /**
      * getType
-     * @returns 
+     * 
+     * Get the type of SQL Server   
+     * 
+     * MySQL = mysql,   
+     * Sqlite3 = sqlite3,   
+     * PostgreSQL = pgsql  
+     * 
+     * ete...
+     * 
+     * @returns {string} type of SQL Server
      */
     this.getType = function(){
         return connection.type;
@@ -91,7 +126,9 @@ module.exports = function(option){
 
     /**
      * getDatabase
-     * @returns 
+     * 
+     * Get the database name (schema name)
+     * @returns {string} database name
      */
     this.getDatabase = function(){
         return connection.dbName;
@@ -99,8 +136,11 @@ module.exports = function(option){
 
     /**
      * setDatabase
-     * @param {*} dbName 
-     * @returns 
+     * 
+     * Change the setting of the database name (schema name) to connect.
+     * 
+     * @param {string} dbName Connect to database name (schema name)
+     * @returns {ORM} ORM Object Class
      */
     this.setDatabase = function(dbName){
         connection.dbName = dbName;
@@ -109,7 +149,10 @@ module.exports = function(option){
 
     /**
      * getTable
-     * @returns 
+     * 
+     * Gets the destination database table name.
+     * 
+     * @returns {string} destination database table name.
      */
     this.getTable = function(){
         return connection.tableName;
@@ -117,8 +160,11 @@ module.exports = function(option){
 
     /**
      * setTable
-     * @param {*} tableName 
-     * @returns 
+     * 
+     * Set the destination database table name.
+     * 
+     * @param {string} tableName destination database table name.
+     * @returns {ORM} ORM Object Class
      */
     this.setTable = function(tableName){
         connection.tableName = tableName;
@@ -127,7 +173,10 @@ module.exports = function(option){
 
     /**
      * getSurrogateKey
-     * @returns 
+     * 
+     * Get the surrogate key name
+     * 
+     * @returns {string} surrogate key name
      */
     this.getSurrogateKey = function(){
         return connection.surrogateKey;
@@ -135,8 +184,11 @@ module.exports = function(option){
 
     /**
      * setSurrogateKey
-     * @param {*} keyName 
-     * @returns 
+     * 
+     * Set the surrogate key name
+     * 
+     * @param {string} keyName surrogate key name
+     * @returns {ORM} ORM Object Class
      */
     this.setSurrogateKey = function(keyName){
         connection.surrogateKey = keyName;
@@ -145,7 +197,10 @@ module.exports = function(option){
 
     /**
      * getUpdateOnGetData
-     * @returns 
+     * 
+     * Acquires record information acquisition settings when updating records.
+     * 
+     * @returns {boolean} Record information acquisition settings when updating records
      */
     this.getUpdateOnGetData = function(){
         return connection.updateOnGetData;
@@ -153,8 +208,11 @@ module.exports = function(option){
 
     /**
      * setUpdateOnGetData
-     * @param {*} status 
-     * @returns 
+     * 
+     * Updates the record information acquisition settings when updating records.
+     * 
+     * @param {boolean} status Record information acquisition settings when updating records
+     * @returns {ORM} ORM Object Class
      */
     this.setUpdateOnGetData = function(status){
         connection.updateOnGetData = status;
@@ -163,7 +221,10 @@ module.exports = function(option){
 
     /**
      * getInsertOnGetData
-     * @returns
+     * 
+     * Acquires the record information acquisition settings when registering a record.
+     * 
+     * @returns {boolean} Record information acquisition settings when registering records
      */
     this.getInsertOnGetData = function(){
         return connection.insertOnGetData;
@@ -171,8 +232,11 @@ module.exports = function(option){
 
     /**
      * setInsertOnGetData
-     * @param {*} status 
-     * @returns 
+     * 
+     * Updates the record information acquisition settings when registering records
+     * 
+     * @param {boolean} status Record information acquisition settings when registering records
+     * @returns {ORM} ORM Object Class
      */
     this.setInsertOnGetData = function(status){
         connection.insertOnGetData = status;
@@ -181,7 +245,10 @@ module.exports = function(option){
 
     /**
      * getCreateTimeStamp
-     * @returns 
+     * 
+     * Get the column name that is automatically set for the record creation date and time.
+     * 
+     * @returns {string} Record creation date and time automatic setting Column name
      */
     this.getCreateTimeStamp = function(){
         return connection.createTimeStamp;
@@ -189,17 +256,23 @@ module.exports = function(option){
 
     /**
      * setCreateTimeStamp
-     * @param {*} status 
-     * @returns 
+     * 
+     * Automatic setting of record creation date and time Set the column name.
+     * 
+     * @param {string} stampeName Record creation date and time automatic setting Column name
+     * @returns {ORM} ORM Object Class
      */
-    this.setCreateTimeStamp = function(status){
-        connection.createTimeStamp = status;
+    this.setCreateTimeStamp = function(stampeName){
+        connection.createTimeStamp = stampeName;
         return this;
     };
 
     /**
      * getUpdateTimeStamp
-     * @returns 
+     * 
+     * Get the automatic setting column name of record update date and time.
+     * 
+     * @returns {string} Record update date and time automatic setting Column name
      */
     this.getUpdateTimeStamp = function(){
         return connection.updateTimeStamp;
@@ -207,17 +280,23 @@ module.exports = function(option){
 
     /**
      * setUpdateTimeStamp
-     * @param {*} status 
-     * @returns 
+     * 
+     * Automatic setting of record update date and time Set the column name.
+     * 
+     * @param {string} stampeName Record update date and time automatic setting Column name
+     * @returns {ORM} ORM Object Class
      */
-    this.setUpdateTimeStamp = function(status){
-        connection.updateTimeStamp = status;
+    this.setUpdateTimeStamp = function(stampeName){
+        connection.updateTimeStamp = stampeName;
         return this;
     };
 
     /**
      * getLogicalDeleteKey
-     * @returns 
+     * 
+     * Gets the column name for record logical deletion.
+     * 
+     * @returns {string} Column name for record logical deletion
      */
     this.getLogicalDeleteKey = function(){
         return connection.logicalDeleteKey;
@@ -225,8 +304,11 @@ module.exports = function(option){
 
     /**
      * setLogicalDeleteKey
-     * @param {*} keyName 
-     * @returns 
+     * 
+     * Set the column name for record logical deletion.
+     * 
+     * @param {string} keyName name for record logical deletion 
+     * @returns {ORM} ORM Object Class
      */
     this.setLogicalDeleteKey = function(keyName){
         connection.logicalDeleteKey = keyName;
@@ -234,9 +316,66 @@ module.exports = function(option){
     };
 
     /**
+     * selectCallback
+     * 
+     * Specify the callback function immediately after getting the record. 
+     * 
+     * @param {function} callback Callback function immediately after record acquisition
+     * @returns {ORM} ORM Object Class
+     */
+    this.selectCallback = function(callback){
+        if(callback != undefined){
+            connection.selectCallback = callback;
+            return this;
+        }
+        else{
+            return connection.selectCallback;
+        }
+    };
+
+    /**
+     * insertCallback
+     * 
+     * Set the execution callback function just before record registration.
+     * 
+     * @param {function} callback Execution callback function just before record registration
+     * @returns {ORM} ORM Object Class
+     */
+    this.insertCallback = function(callback){
+        if(callback != undefined){
+            connection.insertCallback = callback;
+            return this;
+        }
+        else{
+            return connection.insertCallback;
+        }
+    };
+
+    /**
+     * updateCallback
+     * 
+     * Specifies the execution callback function just before the record update
+     * 
+     * @param {function} callback Execution callback function just before record update
+     * @returns {ORM} ORM Object Class
+     */
+    this.updateCallback = function(callback){
+        if(callback != undefined){
+            connection.updateCallback = callback;
+            return this;
+        }
+        else{
+            return connection.updateCallback;
+        }
+    };
+
+    /**
      * sanitize
-     * @param {*} str 
-     * @returns 
+     * 
+     * Perform sanitization for SQL.
+     * 
+     * @param {string} str Character string to be sanitized 
+     * @returns {string} String after sanitization
      */
     this.sanitize = function(str){
 
@@ -248,9 +387,12 @@ module.exports = function(option){
 
     /**
      * getBindSql
-     * @param {*} sql 
-     * @param {*} values 
-     * @returns 
+     * 
+     * Generate executable SQL from prepared statement SQL and variable information.
+     * 
+     * @param {string} sql Prepared statement SQL
+     * @param {object} values Variable information
+     * @returns {string} Executable SQL
      */
     this.getBindSql = function(sql, values){
 
@@ -295,7 +437,7 @@ module.exports = function(option){
                 }
             }
 
-            sql = sql.replace(":" + field, value);
+            sql = sql.replace("{:" + field + "}", value);
         }
 
         return sql;
@@ -303,20 +445,27 @@ module.exports = function(option){
 
     /**
      * bind
-     * @param {*} sql 
-     * @param {*} values 
-     * @param {*} callback 
-     * @returns 
+     * 
+     * Prepared statement Binds a variable to SQL and executes a SQL request.
+     * 
+     * @param {string} sql Prepared statement SQL
+     * @param {object} values Variable information
+     * @param {function} callback Callback function after SQL execution
+     * @returns {OrmQuery} ORM Query Object Class
      */
-    this.bind = function(sql, values, callback){
+    this.bind = function(sql, values, callback, beforeCallback){
         sql = this.getBindSql(sql, values);
-        return this.query(sql, callback);
+        return this.query(sql, callback, beforeCallback);
     };
 
     /**
      * select
-     * @param {*} option 
-     * @returns 
+     * 
+     * Gets the record acquisition class object.  
+     * It is also possible to specify conditions in the argument and execute record acquisition as it is.
+     * 
+     * @param {object} [option] option settings
+     * @returns {select} ORM Select Object Class
      */
     this.select = function(option){
         return new select(this, option);
@@ -324,8 +473,12 @@ module.exports = function(option){
 
     /**
      * insert
-     * @param {*} option 
-     * @returns 
+     * 
+     * Get the class object for record registration.  
+     * You can also execute the record registration process directly by using the argument.
+     * 
+     * @param {object} [option] option settings 
+     * @returns {insert} ORM Insert Object Class
      */
     this.insert = function(option){
         return new insert(this, option);
@@ -333,6 +486,9 @@ module.exports = function(option){
 
     /**
      * update
+     * 
+     * 
+     * 
      * @param {*} option 
      * @returns 
      */
@@ -384,4 +540,66 @@ module.exports = function(option){
     this.alterTable = function(option){
         return new alterTable(this, option);
     };
+
+    /**
+     * then
+     * @param {function} callback Callback
+     * @returns 
+     */
+    this.then = function(callback){
+        return sync(this, callback);
+    };
+
+    /**
+     * transaction
+     * @param {function} callback "Begin" After Callback,
+     * @param {function} [commitCallback] "commit" after Callback,
+     * @param {function} [rollbackCallback] "rollback" after Callback.
+     * @returns OrmTransaction Class Object
+     */
+    this.transaction = function(callback, commitCallback, rollbackCallback){
+        return new transaction(this, callback, commitCallback, rollbackCallback);
+    };
+
+    /**
+     * trs (= transaction)
+     * @param {function} callback "Begin" After Callback,
+     * @param {function} [commitCallback] "commit" after Callback,
+     * @param {function} [rollbackCallback] "rollback" after Callback.
+     * @returns OrmTransaction Class Object
+     */
+    this.trs = this.transaction;
+
+    /**
+     * begin
+     * @param {*} callback 
+     * @returns 
+     */
+    this.begin = function(callback){
+        const transactions = new transaction(this);
+        return transactions.begin(callback);
+    };
+
+    /**
+     * commit
+     * @param {*} callback 
+     * @returns 
+     */
+    this.commit = function(callback){
+        const transactions = new transaction(this);
+        return transactions.commit(callback);
+    };
+
+    /**
+     * rollback
+     * @param {*} callback 
+     * @param {*} error 
+     * @returns 
+     */
+    this.rollback = function(callback, error){
+        const transactions = new transaction(this);
+        return transactions.rollback(callback, error);
+    };
+
 };
+module.exports = Orm;

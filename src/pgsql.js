@@ -31,6 +31,56 @@ const OrmPgsql = function(option){
         dbSet.database = option.database;
     }
 
+    // table name
+    if(option.table){
+        this.tableName = option.table;
+    }
+
+    // Surrogate Key
+    if(option.surrogateKey){
+        this.surrogateKey = option.surrogateKey;
+    }
+
+    // Insert On Get Data
+    if(option.insertOnGetData){
+        this.insertOnGetData = option.insertOnGetData;
+    }
+
+    // Update On Get Data
+    if(option.updateOnGetData){
+        this.updateOnGetData = option.updateOnGetData;
+    }
+
+    // Create Time Stamp
+    if(option.createTimeStamp){
+        this.createTimeStamp = option.createTimeStamp;
+    }
+
+    // Update Time Stamp
+    if(option.updateTimeStamp){
+        this.updateTimeStamp = option.updateTimeStamp;
+    }
+
+    // logical Delete Key
+    if(option.logicalDeleteKey){
+        this.logicalDeleteKey = option.logicalDeleteKey;
+    }
+
+    // select callback
+    if(option.selectCallback){
+        this.selectCallback = option.selectCallback;
+    }
+
+    // insert callback
+    if(option.insertCallback){
+        this.insertCallback = option.insertCallback;
+    }
+
+    // update callback
+    if(option.updateCallback){
+        this.updateCallback = option.updateCallback;
+    }
+
     var client = new pg.Client(dbSet);
 
     client.connect()

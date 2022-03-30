@@ -6,7 +6,7 @@ const setBind = function(){
     this.set = function(value){
         bindIndex++;
         binds[bindIndex] = value;
-        return ":" + bindIndex;
+        return "{:" + bindIndex + "}";
     };
 
     this.getBind = function(){

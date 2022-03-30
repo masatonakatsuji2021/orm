@@ -100,6 +100,16 @@ const OrmSelect = function(context, option){
     };
 
     /**
+     * callback
+     * @param {*} callback 
+     * @returns 
+     */
+    this.callback = function(callback){
+        context.selectCallback(callback);
+        return this;
+    };
+
+    /**
      * surrogate
      * @param {*} surrogateId 
      * @returns 
@@ -208,7 +218,18 @@ const OrmSelect = function(context, option){
      */
     this.get = function(callback){
         var sqls = this.getSqls();
-        return context.bind(sqls.sql, sqls.bind, callback);
+        return context.bind(sqls.sql, sqls.bind, callback, function(res){
+         
+            var selectCallback = context.selectCallback();
+
+            if(selectCallback){
+                var buff = selectCallback(res);
+                if(buff){
+                    return buff;
+                }
+            }
+
+        });
     };
 
     /**
@@ -250,8 +271,20 @@ const OrmSelect = function(context, option){
             this.limit(option.limit);
         }
 
+        if(option.offset){
+            this.offset(option.offset);
+        }
+
         if(option.paging){
             this.paging(option.paging);
+        }
+
+        if(option.get){
+            this.get(option.get);
+        }
+
+        if(option.getCount){
+            this.getCount(option.getCount);
         }
     }
 

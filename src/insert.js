@@ -1,5 +1,6 @@
 const setBind = require("./setBind.js");
 const select = require("./select.js");
+const { connectionString } = require("pg/lib/defaults");
 
 const OrmInsert = function(context, option){
 
@@ -42,6 +43,16 @@ const OrmInsert = function(context, option){
      */
     this.updateTimeStamp = function(status){
         context.setUpdateTimeStamp(status);
+        return this;
+    };
+
+    /**
+     * callback
+     * @param {*} callback 
+     * @returns 
+     */
+    this.callback = function(callback){
+        context.insertCallback(callback);
         return this;
     };
 
@@ -116,6 +127,15 @@ const OrmInsert = function(context, option){
      * @returns 
      */
     this.run = function(callback){
+
+        var insertCallback = context.insertCallback();
+        if(insertCallback){
+            var buff = insertCallback(data);
+            if(buff){
+                data = buff;
+            }
+        }
+
         var sqls = this.getSqls();
         return context.bind(sqls.sql, sqls.bind, function(res){
 
