@@ -487,10 +487,11 @@ const Orm = function(connectionSetting){
     /**
      * update
      * 
+     * Get the class object for record update.  
+     * You can also use the argument to perform a record update directly.
      * 
-     * 
-     * @param {*} option 
-     * @returns 
+     * @param {object} [option] option settings
+     * @returns {update} ORM update Object Class
      */
     this.update = function(option){
         return new update(this, option);
@@ -498,8 +499,12 @@ const Orm = function(connectionSetting){
 
     /**
      * deleete
-     * @param {*} option 
-     * @returns 
+     * 
+     * Gets the class object for record deletion.  
+     * You can also use the argument to perform record deletion directly.
+     * 
+     * @param {object} [option] option settings
+     * @returns {deletes} ORM Delete Object Class
      */
      this.delete = function(option){
         return new deletes(this, option);
@@ -507,8 +512,12 @@ const Orm = function(connectionSetting){
 
     /**
      * createDatabase
-     * @param {*} option 
-     * @returns 
+     * 
+     * Get the class object for creating the database.  
+     * You can also use the arguments to perform the database creation directly.
+     * 
+     * @param {object} [option] option settings 
+     * @returns {createDatabase} ORM Create Database Object Class
      */
     this.createDatabase = function(option){
         return new createDatabase(this, option);
@@ -516,6 +525,9 @@ const Orm = function(connectionSetting){
 
     /**
      * createTable
+     * 
+     * 
+     * 
      * @param {*} option 
      * @returns 
      */
