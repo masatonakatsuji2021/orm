@@ -7,6 +7,16 @@ const OrmDelete = function(context, option){
     var physicalDelete;
 
     /**
+     * table
+     * @param {*} tableName 
+     * @returns 
+     */
+    this.table = function(tableName){
+        context.setTable(tableName);
+        return this;
+    };
+
+    /**
      * _wheres
      * @param {*} where_ 
      * @returns 
@@ -148,7 +158,7 @@ const OrmDelete = function(context, option){
 
         if(context.getLogicalDeleteKey()){
 
-            if(this.physicalDelete()){
+            if(physicalDelete){
                 // Get Physical Delete Sql
                 return physicalDeleteSql();
             }
@@ -165,6 +175,16 @@ const OrmDelete = function(context, option){
      }
 
      /**
+      * getSql
+      * @returns 
+      */
+     this.getSql = function(){
+        var sqls = this.getSqls();
+        return context.getBindSql(sqls.sql, sqls.bind);
+     }
+
+
+    /**
       * run
       * @param {*} callback 
       */
@@ -172,19 +192,6 @@ const OrmDelete = function(context, option){
         var sqls = this.getSqls();
         context.bind(sqls.sql, sqls.bind, function(res){
             callback(res);
-/*
-            if(!res.result){
-                return callback(res);
-            }
-
-            if(!context.getUpdateOnGetData()){
-                return callback(res);
-            }
-
-            var select_ = new select(context);
-
-            select_._wheres(wheres).get(callback);
-            */
         });
     };
 

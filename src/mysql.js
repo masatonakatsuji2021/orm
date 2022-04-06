@@ -2,6 +2,8 @@ const mysql = require("mysql");
 
 const OrmMysql = function(option){
 
+    const logs = [];
+
     this.type = "mysql";
     this.sallogateKey = null;
 
@@ -91,19 +93,22 @@ const OrmMysql = function(option){
     /**
      * connection
      * @param {*} callback 
-     * @param {*} errCallback 
      * @returns 
      */
-    this.connection = function(callback, errCallback){
+    this.connection = function(callback){
 
         connection.connect(function(err){
 
             if(err){
-                errCallback(err);
+                return callback({
+                    result: false,
+                    error: err,
+                });
             }
-            else{
-                callback();
-            }
+
+            callback({
+                result: true,
+            });
         });
 
         return this;
@@ -118,6 +123,8 @@ const OrmMysql = function(option){
     this.query = function(sql, callback){
 
         return connection.query(sql, function(err, res){
+
+            logs.push(sql);
 
             if(err){
                 callback({
@@ -135,5 +142,14 @@ const OrmMysql = function(option){
             });
         });
     };
+
+    /**
+     * getLog
+     * @returns 
+     */
+    this.getLog = function(){
+        return logs;
+    };
+
 };
 module.exports = OrmMysql;

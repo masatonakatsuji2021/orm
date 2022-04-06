@@ -7,9 +7,13 @@ const select = require("./select.js");
 const insert = require("./insert.js");
 const update = require("./update.js");
 const deletes = require("./delete.js");
+const truncate = require("./truncate.js");
 const createDatabase = require("./createDatabase.js");
 const createTable = require("./createTable.js");
+const createView = require("./createView.js");
+const dropDatabase = require("./dropDatabase.js");
 const dropTable = require("./dropTable.js");
+const dropView = require("./dropView.js");
 const alterTable = require("./alterTable.js");
 const transaction = require("./transaction.js");
 const sync = require("./sync.js");
@@ -105,6 +109,15 @@ const Orm = function(connectionSetting){
      */
     this.query = function(sql, callback, beforeCallback){
         return new OrmQuery(sql, connection, callback, beforeCallback);
+    };
+
+    /**
+     * getLog
+     * 
+     * @returns 
+     */
+    this.getLog = function(){
+        return connection.getLog();
     };
 
     /**
@@ -511,6 +524,19 @@ const Orm = function(connectionSetting){
     };
 
     /**
+     * truncate
+     * 
+     * Gets the class object for record truncate.  
+     * You can also use the argument to perform record deletion directly.
+     * 
+     * @param {Object} [option] option settings
+     * @returns {truncate} ORM Ttruncate Object Class
+     */
+    this.truncate = function(option){
+        return new truncate(this, option);
+    };
+    
+    /**
      * createDatabase
      * 
      * Get the class object for creating the database.  
@@ -536,12 +562,44 @@ const Orm = function(connectionSetting){
     };
 
     /**
+     * createView
+     * 
+     * 
+     * 
+     * @param {*} option 
+     * @returns 
+     */
+    this.createView = function(option){
+        return new createView(this, option);
+    };
+
+    /**
+     * dropDatabase
+     * @param {*} option 
+     * @returns 
+     */
+    this.dropDatabase = function(option){
+        return new dropDatabase(this, option);
+    };
+
+    /**
      * dropTable
+     * 
      * @param {*} option 
      * @returns 
      */
     this.dropTable = function(option){
         return new dropTable(this, option);
+    };
+
+    /**
+     * dropView
+     * 
+     * @param {*} option 
+     * @returns 
+     */
+    this.dropView = function(option){
+        return new dropView(this, option);
     };
 
     /**
@@ -555,11 +613,26 @@ const Orm = function(connectionSetting){
 
     /**
      * then
+     * 
+     * For synchronous processing support.
      * @param {function} callback Callback
      * @returns 
      */
     this.then = function(callback){
         return sync(this, callback);
+    };
+
+    /**
+     * for
+     * 
+     * @param {*} start 
+     * @param {*} end 
+     * @param {*} callback 
+     * @param {*} incrementValue 
+     * @returns 
+     */
+    this.for = function(start, end, callback, incrementValue){
+        return sync(this).for(start, end, callback, incrementValue);
     };
 
     /**

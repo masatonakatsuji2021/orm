@@ -66,7 +66,9 @@ const OrmSqlite3 = function(option){
      */
     this.connection = function(callback){
         db.serialize(function(){
-            callback();
+            callback({
+                result: true,
+            });
         });
     };
 
@@ -84,7 +86,20 @@ const OrmSqlite3 = function(option){
         }
 
         if(mode == "run"){
-            return db.run(sql);
+            return db.run(sql,function(err){
+
+                if(err){
+                    callback({
+                        result: false,
+                        error: err,
+                    });
+                    return;
+                }
+      
+                callback({
+                    result: true,
+                });
+            });
         }
         else{
             return db[mode](sql, function(err, res){

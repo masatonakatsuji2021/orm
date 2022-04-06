@@ -1,20 +1,15 @@
-const OrmDropTable = function(context, option){
+const OrmDropDatabase = function(context, option){
 
+    var databaseName;
     var dropOption = {};
 
     /**
-     * table
-     * @param {*} name 
-     * @param {*} opt 
+     * database
+     * @param {*} dbName 
      * @returns 
      */
-    this.table = function(name, opt){
-        context.setTable(name);
-
-        if(opt){
-            dropOption = opt;
-        }
-
+    this.database = function(dbName){
+        databaseName = dbName
         return this;
     };
 
@@ -34,19 +29,13 @@ const OrmDropTable = function(context, option){
      */
     this.getSql = function(){
 
-        var sql = "DROP TABLE";
+        var sql = "DROP DATABASE";
 
         if(dropOption.ifExists){
             sql += " IF EXISTS";
         }
 
-        if(context.getType() == "sqlite3"){
-            sql += " " + context.getTable();
-            ;
-        }
-        else{
-            sql += " " + context.getDatabase() + "." + context.getTable();
-        }
+        sql += " " + databaseName + ";";
 
         return sql;
     };
@@ -57,19 +46,22 @@ const OrmDropTable = function(context, option){
      * @returns 
      */
     this.run = function(callback){
+
         var sql = this.getSql();
+ 
+        if(context.getType() == "sqlite3"){
+            return callback({
+                result: true,
+            });
+        }
+ 
         return context.query(sql, callback);
     }
 
     if(option){
 
-        var _opt = {};
-        if(option.option){
-            _opt = option.option;
-        }
-
-        if(option.table){
-            this.table(option.table, _opt);
+        if(option.database){    
+            this.database(option.database);
         }
         if(option.ifExists){
             this.ifExists(option.ifExists);
@@ -77,4 +69,4 @@ const OrmDropTable = function(context, option){
     }
 
 };
-module.exports = OrmDropTable;
+module.exports = OrmDropDatabase;

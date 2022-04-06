@@ -7,6 +7,16 @@ const OrmUpdate = function(context, option){
     var wheres = [];
 
     /**
+     * table
+     * @param {*} tableName 
+     * @returns 
+     */
+    this.table = function(tableName){
+        context.setTable(tableName);
+        return this;
+    };
+
+    /**
      * data
      * @param {*} _data 
      * @returns 
@@ -111,7 +121,14 @@ const OrmUpdate = function(context, option){
 
         if(context.getUpdateTimeStamp()){
             var d = new Date();
-            var nowDate = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+            var nowDate = d.getFullYear()
+                + "/" + ("00" + (d.getMonth() + 1)).slice(-2)
+                + "/" + ("00" + d.getDate()).slice(-2) 
+                + " " + ("00" + d.getHours()).slice(-2)
+                + ":" + ("00" + d.getMinutes()).slice(-2)
+                + ":" + ("00" + d.getSeconds()).slice(-2)
+            ;
+            
             data[context.getUpdateTimeStamp()] = nowDate;
         }
 
@@ -165,6 +182,15 @@ const OrmUpdate = function(context, option){
             sql: sql,
             bind: setbinds.getBind(),
         };
+    };
+    
+    /**
+     * getSql
+     * @returns 
+     */
+    this.getSql = function(){
+        var sqls = this.getSqls();
+        return context.getBindSql(sqls.sql, sqls.bind);
     };
 
     /**

@@ -1,3 +1,11 @@
+/**
+ * OrmCreateTableSqlite3
+ * @param {*} context 
+ * @param {*} tableName 
+ * @param {*} tableOption 
+ * @param {*} colums 
+ * @returns 
+ */
 const OrmCreateTableSqlite3 = function(context, tableName, tableOption, colums){
 
     var sql = "CREATE TABLE";
@@ -20,33 +28,32 @@ const OrmCreateTableSqlite3 = function(context, tableName, tableOption, colums){
             }
             var c_ = colums[n];
 
-            /*
-            if(c_.autoIncrement){
-                if(context.getType() == "pgsql"){
-                    c_.name = "serial";
-                }
+            if(c_.type == "int"){
+                c_.type = "integer";
             }
-            */
+            if(c_.type == "numeric"){
+                c_.type = "REAL";
+            }
 
             columsList += "  " + c_.name + " " + c_.type;
 
-            /**
-            if(c_.length){
-                columsList += "(" + c_.length + ")";
-            }
-             */
-
             if(c_.primaryKey){
                 // sqlite3 case....
-                primaryKeys.push(c_.name);
+                if(c_.autoIncrement){
+                    columsList += "  PRIMARY KEY";
+                }
+                else{
+                    primaryKeys.push(c_.name);
+                }
             }
         
             if(c_.notNull){
-                columsList += " NOT NULL";
+                if(!c_.autoIncrement){
+                    columsList += " NOT NULL";
+                }
             }
-
+            
             if(c_.autoIncrement){
-                // sqlite3 case....
                 columsList += " AUTOINCREMENT";
             }
 
@@ -59,9 +66,6 @@ const OrmCreateTableSqlite3 = function(context, tableName, tableOption, colums){
                 }
             }
 
-            if(c_.comment){
-                columsList += " COMMENT \"" + c_.comment + "\"";
-            }
         }
         
         if(primaryKeys.length){

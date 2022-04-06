@@ -15,6 +15,7 @@ const OrmSync = function(context, callback){
 
         /**
          * then
+         * 
          * @param {*} callback 
          * @returns 
          */
@@ -22,6 +23,40 @@ const OrmSync = function(context, callback){
 
             _callbacks.push(callback);
             return this;
+        },
+
+        /**
+         * for
+         * 
+         * @param {*} startIndex 
+         * @param {*} endIndex 
+         * @param {*} callback 
+         * @param {*} exitCallback 
+         * @param {*} incrementValue 
+         */
+        for: function(startIndex, endIndex, callback, exitCallback, incrementValue){
+
+            callback = callback.bind(context);
+            
+            if(incrementValue == undefined){
+                incrementValue = 1;
+            }
+
+            const resolve = function(){
+
+                startIndex += incrementValue;
+
+                if(startIndex > (endIndex - 1)){
+                    if(exitCallback){
+                        exitCallback.bind(context)();
+                    }
+                    return;
+                }
+
+                callback(startIndex, resolve);
+            };
+
+            callback(startIndex, resolve);
         },
 
         /**

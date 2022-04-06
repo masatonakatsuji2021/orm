@@ -8,6 +8,19 @@ const OrmSelect = function(context, option){
     var limits = null;
     var offsets = null;
 
+    var onLogicalDelete = false;
+    var allLogicalDelete = false;
+
+    /**
+     * table
+     * @param {*} tableName 
+     * @returns 
+     */
+    this.table = function(tableName){
+        context.setTable(tableName);
+        return this;
+    }
+
     /**
      * fields
      * @param {*} values 
@@ -100,6 +113,26 @@ const OrmSelect = function(context, option){
     };
 
     /**
+     * onLogicalDelete
+     * @param {*} status 
+     * @returns 
+     */
+    this.onLogicalDelete = function(status){
+        onLogicalDelete = status;
+        return this;
+    };
+
+    /**
+     * allLogicalDelete
+     * @param {*} status 
+     * @returns 
+     */
+    this.allLogicalDelete = function(status){
+        allLogicalDelete = status;
+        return this;
+    };
+
+    /**
      * callback
      * @param {*} callback 
      * @returns 
@@ -132,6 +165,17 @@ const OrmSelect = function(context, option){
     this.getSqls = function(){
 
         var selectSql = "select";
+
+        if(context.getLogicalDeleteKey()){
+            if(!allLogicalDelete){
+                if(onLogicalDelete){
+                    this.where(context.getLogicalDeleteKey(), "=", 1);
+                }
+                else{
+                    this.where(context.getLogicalDeleteKey(), "=", 0);
+                }
+            }
+        }
 
         const setBinds = new setBind();
 
@@ -209,6 +253,15 @@ const OrmSelect = function(context, option){
             sql: selectSql,
             bind: setBinds.getBind(),
         };
+    };
+
+    /**
+     * getSql
+     * @returns 
+     */
+    this.getSql = function(){
+        var sqls = this.getSqls();
+        return context.getBindSql(sqls.sql, sqls.bind);
     };
 
     /**

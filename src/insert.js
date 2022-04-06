@@ -1,10 +1,24 @@
 const setBind = require("./setBind.js");
 const select = require("./select.js");
-const { connectionString } = require("pg/lib/defaults");
 
+/**
+ * OrmInsert
+ * @param {*} context 
+ * @param {*} option 
+ */
 const OrmInsert = function(context, option){
 
     var data = {};
+
+    /**
+     * table
+     * @param {*} tableName 
+     * @returns 
+     */
+    this.table = function(tableName){
+        context.setTable(tableName);
+        return this;
+    };
 
     /**
      * data
@@ -82,7 +96,13 @@ const OrmInsert = function(context, option){
         ){
 
             var d = new Date();
-            var nowDate = d.getFullYear() + "-" + (d.getMonth() + 1) + "-" + d.getDate() + " " + d.getHours() + ":" + d.getMinutes() + ":" + d.getSeconds();
+            var nowDate = d.getFullYear()
+                + "/" + ("00" + (d.getMonth() + 1)).slice(-2)
+                + "/" + ("00" + d.getDate()).slice(-2) 
+                + " " + ("00" + d.getHours()).slice(-2)
+                + ":" + ("00" + d.getMinutes()).slice(-2)
+                + ":" + ("00" + d.getSeconds()).slice(-2)
+            ;
 
             if(context.getCreateTimeStamp()){
                 data[context.getCreateTimeStamp()] = nowDate;
@@ -111,14 +131,21 @@ const OrmInsert = function(context, option){
 
         }
 
-        sql += "(" + fieldsListStr + ") VALUES (" + valueListStr + ")";
-
-        sql += ";"
+        sql += "(" + fieldsListStr + ") VALUES (" + valueListStr + ");";
 
         return {
             sql:sql,
             bind: setbinds.getBind(),
         };
+    };
+
+    /**
+     * getSql
+     * @returns 
+     */
+    this.getSql = function(){
+        var sqls = this.getSqls();
+        return context.getBindSql(sqls.sql, sqls.bind);
     };
 
     /**

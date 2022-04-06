@@ -1,11 +1,16 @@
 const OrmCreateTable = function(context, option){
 
-    var tableName;
-    var tableOption = null;
+    var tableOption = {};
     var colums = [];
 
+    /**
+     * table
+     * @param {*} name 
+     * @param {*} opt 
+     * @returns 
+     */
     this.table = function(name, opt){
-        tableName = name;
+        context.setTable(name);
 
         if(opt){
             tableOption = opt;
@@ -14,6 +19,88 @@ const OrmCreateTable = function(context, option){
         return this;
     };
 
+    /**
+     * tableOption
+     * @param {*} _option 
+     * @returns 
+     */
+    this.tableOption = function(_option){
+        tableOption = _option;
+        return this;
+    };
+
+    /**
+     * getTable
+     * @returns 
+     */
+    this.getTable = function(){
+        return context.getTable();
+    };
+
+    /**
+     * reCreate
+     * @param {*} reCreate 
+     * @returns 
+     */
+    this.reCreate = function(reCreate){
+        tableOption.reCreate = reCreate;
+        return this;
+    };
+
+    /**
+     * ifNotExists
+     * @param {*} status 
+     * @returns 
+     */
+     this.ifNotExists = function(status){
+        tableOption.ifNotExists = status;
+        return this;
+    };
+
+    /**
+     * engine
+     * @param {*} engine 
+     * @returns 
+     */
+     this.engine = function(engine){
+        tableOption.engine = engine;
+        return this;
+    };
+
+    /**
+     * character
+     * @param {*} character 
+     * @returns 
+     */
+    this.character = function(character){
+        tableOption.character = character;
+        return this;
+    };
+
+    /**
+     * defaultCharset
+     * @param {*} defaultCharset 
+     */
+    this.defaultCharset = function(defaultCharset){
+        tableOption.defaultCharset = defaultCharset;
+        return this;
+    };
+
+    /**
+     * collate
+     * @param {*} collate 
+     * @returns 
+     */
+    this.collate = function(collate){
+        tableOption.collate = collate;
+        return this;
+    }
+
+    /**
+     * addColumn
+     * @param {*} opt 
+     * @returns 
+     */
     this.addColumn = function(opt){
         colums.push(opt);
         return this;
@@ -40,7 +127,7 @@ const OrmCreateTable = function(context, option){
             createTable = require("./createTableOracle.js");
         }
 
-        var sql = createTable(context, tableName, tableOption, colums);
+        var sql = createTable(context, context.getTable(), tableOption, colums);
 
         return sql;
     };
@@ -57,13 +144,10 @@ const OrmCreateTable = function(context, option){
 
     if(option){
         if(option.table){
-
-            var _opt = null;
-            if(option.option){
-                _opt = option.option;
-            }
-    
-            this.table(option.table, _opt);
+            this.table(option.table);
+        }
+        if(option.option){
+            this.tableOption(option.option);
         }
 
         if(option.colums){
