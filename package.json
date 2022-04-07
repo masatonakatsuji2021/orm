@@ -1,7 +1,33 @@
 {
+  "name": "hachiware_orm",
+  "version": "1.0.0",
+  "description": "OR-Mapper MySQL PostgreSQL, Sqlite3, Oracle,",
+  "main": "index.js",
   "dependencies": {
     "mysql": "^2.18.1",
     "pg": "^8.7.3",
     "sqlite3": "^5.0.2"
-  }
+  },
+  "devDependencies": {},
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/masatonakatsuji2021/orm.git"
+  },
+  "keywords": [
+    "database",
+    "or-mapping",
+    "mysql",
+    "postgresql",
+    "sqlite3",
+    "oracle"
+  ],
+  "author": "Nakatsuji Masato",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/masatonakatsuji2021/orm/issues"
+  },
+  "homepage": "https://github.com/masatonakatsuji2021/orm#readme"
 }
